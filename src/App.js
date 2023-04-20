@@ -1,10 +1,10 @@
-//import logo from './logo.svg';
-import './App.css';
-
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import axios from "axios";
-import {Link} from 'react-router-dom';
+import 'bootstrap/dist/css/bootstrap.css';
 import { Container } from "react-bootstrap";
+import Form from 'react-bootstrap/Form';
+import Button from 'react-bootstrap/Button';
+import logo from './logo.png';
 
 function App() {
   const [name, setName] = useState("");
@@ -54,12 +54,10 @@ function App() {
   };
 
   return (
-    <div className="App">
+    <div className="App" style={{padding: "6em"}}>
       <Container className="content">
-
-        <div className="row">
-          <div className="col-sm-12">
-            <h2 className="mt-4 mb-4 fw-bold">
+            <h2 className="mt-4 mb-4 fw-bold" style={{color: "#3372FF"}}>
+              <span><img src={logo} alt="Logo" width="55" height="60"/></span>
               BP Calculator  
             </h2>
 
@@ -70,32 +68,32 @@ function App() {
               </div>
             ) : (
               <></>
-            )}
+              )}
 
-            <form onSubmit={submitData} className="row g-3">
-              <div className="col-md-3">
+            <Form onSubmit={submitData} className="row g-3">
+            <Form.Group className="mb-3" >
                 <label className="form-label">Name </label>
-                <input
+                <Form.Control
                   type="text"
                   name="name"
                   className="form-control p-2"
                   onChange={(e) => handleusername(e)}
                 />
-              </div>
+            </Form.Group>
 
-              <div className="col-md-3">
+              <Form.Group className="mb-3" >
                 <label className="form-label">Email</label>
-                <input
+                <Form.Control
                   type="text"
                   name="email"
                   className="form-control p-2"
                   onChange={(e) => handleemail(e)}
                 />
-              </div>
+              </Form.Group>
 
-              <div className="col-md-3">
+              <Form.Group className="mb-3" >
                 <label className="form-label">Systolic</label>
-                <input
+                <Form.Control
                   type="number"
                   min="70"
                   max="190"
@@ -103,11 +101,11 @@ function App() {
                   className="form-control p-2"
                   onChange={(e) => handlesystolic(e)}
                 />
-              </div>
+              </Form.Group>
 
-              <div className="col-md-3">
+              <Form.Group className="mb-3" >
                 <label className="form-label">Diastolic</label>
-                <input
+                <Form.Control
                   type="number"
                   min="40"
                   max="100"
@@ -115,16 +113,14 @@ function App() {
                   className="form-control p-2"
                   onChange={(e) => handlediastolic(e)}
                 />
-              </div>              
+              </Form.Group>
 
-              <div className="col-md-3">
-                <button type="submit" className="btn btn-primary mt-4">
+              <Form.Group className="mb-3" >
+                <Button type="submit" className="btn btn-primary mt-4">
                   Submit
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
+                </Button>
+              </Form.Group>
+            </Form>
       </Container>
     </div>
   );
