@@ -11,7 +11,7 @@ function App() {
   const [email, setEmail] = useState("");
   const [systolic, setSystolic] = useState("");
   const [diastolic, setDiastolic] = useState("");
-  const [message, setMessage] = useState("");
+  //const [message, setMessage] = useState("");
 
     const handleusername = (event) => {
     const name = event.target.value;
@@ -42,33 +42,27 @@ function App() {
       diastolic: diastolic,
     };
     await axios
-      .post(
-        "http://localhost/api/bpcalc/",
-        JSON.stringify(userdata)
-      )
-      .then((result) => {
-        setMessage(result.data.msg);
-        console.log(result.data);
-        console.log(result.data.msg);
-      });
+      .post("http://localhost/api/bpcalc/", JSON.stringify(userdata))
+      .then(response => { console.log(response) })
+      .catch(err => { console.log(err) });
   };
 
   return (
-    <div className="App" style={{padding: "6em"}}>
+    <div className="App" style={{padding: "4em"}}>
       <Container className="content">
             <h2 className="mt-4 mb-4 fw-bold" style={{color: "#3372FF"}}>
               <span><img src={logo} alt="Logo" width="55" height="60"/></span>
               BP Calculator  
             </h2>
 
-            {message ? (
+            {/* {message ? (
               <div className="text-success text-white">
                 {" "}
                 <h5>{message} </h5>
               </div>
             ) : (
               <></>
-              )}
+              )} */}
 
             <Form onSubmit={submitData} className="row g-3">
             <Form.Group className="mb-3" >
@@ -117,7 +111,7 @@ function App() {
 
               <Form.Group className="mb-3" >
                 <Button type="submit" className="btn btn-primary mt-4">
-                  Submit
+                  Calculate
                 </Button>
               </Form.Group>
             </Form>
