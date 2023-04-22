@@ -39,26 +39,26 @@ jobs:
         run: npm test
 
       # SAST analysis
-      # - name: SonarCloud Analysis
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: ~/.sonar/cache
-      #     key: ${{ runner.os }}-sonar
-      #     restore-keys: ${{ runner.os }}-sonar
-      # - uses: SonarSource/sonarcloud-github-action@master
-      #   env:
-      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      #   with:
-      #     args:
-      #       -Dsonar.projectKey=react-bp-microservice
-      #       -Dsonar.organization=hypheni
-      #       -Dsonar.javascript.lcov.reportPaths=./coverage/lcov.info
+      - name: SonarCloud Analysis
+        uses: actions/cache@v2
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      - uses: SonarSource/sonarcloud-github-action@v1.8
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args:
+            -Dsonar.projectKey=react-bp-microservice
+            -Dsonar.organization=hypheni
+            -Dsonar.javascript.lcov.reportPaths=./coverage/lcov.info
 
       # Node package vulnerability check
-      - name: Vulnerability Check
-        uses: NodeSecure/ci-action@177c57fe32c75cafabe87f6e4515d277cc37ae6c #1.4.1
-        with:
-          strategy: npm
-          vulnerabilities: medium
-          warnings: off
-          reporters: console
+      # - name: Vulnerability Check
+      #   uses: NodeSecure/ci-action@177c57fe32c75cafabe87f6e4515d277cc37ae6c #1.4.1
+      #   with:
+      #     strategy: npm
+      #     vulnerabilities: medium
+      #     warnings: off
+      #     reporters: console
