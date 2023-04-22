@@ -1,0 +1,69 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+#env:
+  #SONAR_ORG: hypheni
+  #SONAR_PROJ: go-bp-calc-k8s
+  
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      # Git checkout
+      - name: Checkout
+        uses: actions/checkout@v3
+        
+      # Setup Node
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 19
+          cache: 'npm'
+          cache-dependency-path: subdir/package-lock.json
+      
+      # Fetch Dependencies
+      - name: Dependency
+        run: npm ci
+      
+      # Build
+      - name: Code Build
+        run: npm run build
+
+      # Unit Test
+      - name: Unit Test
+        run: npm test
+
+      # # SAST analysis
+      # - name: SonarCloud Analysis
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: ~/.sonar/cache
+      #     key: ${{ runner.os }}-sonar
+      #     restore-keys: ${{ runner.os }}-sonar
+      # - uses: SonarSource/sonarcloud-github-action@master
+      #   env:
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      #   with:
+      #     args:
+      #       -Dsonar.projectKey=go-bp-calc-k8s
+      #       -Dsonar.organization=hypheni
+      #       -Dsonar.go.coverage.reportPaths=coverage.out
+
+      # Go package vulnerability check
+      # - name: Vulnerability Check
+      #   uses: Templum/govulncheck-action@v0.10.0
+      #   with:
+      #     go-version: '1.20'
+      #     skip-upload: true
+      #     fail-on-vuln: false
+      #   env:
+      #     DEBUG: "true"
+      # - uses: actions/upload-artifact@v3
+      #   with:
+      #     name: raw-report
+      #     path: raw-report.json
