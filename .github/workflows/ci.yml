@@ -38,32 +38,27 @@ jobs:
       - name: Unit Test
         run: npm test
 
-      # # SAST analysis
-      # - name: SonarCloud Analysis
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: ~/.sonar/cache
-      #     key: ${{ runner.os }}-sonar
-      #     restore-keys: ${{ runner.os }}-sonar
-      # - uses: SonarSource/sonarcloud-github-action@master
-      #   env:
-      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      #   with:
-      #     args:
-      #       -Dsonar.projectKey=go-bp-calc-k8s
-      #       -Dsonar.organization=hypheni
-      #       -Dsonar.go.coverage.reportPaths=coverage.out
+      # SAST analysis
+      - name: SonarCloud Analysis
+        uses: actions/cache@v2
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      - uses: SonarSource/sonarcloud-github-action@master
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args:
+            -Dsonar.projectKey=react-bp-microservice
+            -Dsonar.organization=hypheni
+            -Dsonar.javascript.lcov.reportPaths=./coverage/lcov.info
 
-      # Go package vulnerability check
-      # - name: Vulnerability Check
-      #   uses: Templum/govulncheck-action@v0.10.0
-      #   with:
-      #     go-version: '1.20'
-      #     skip-upload: true
-      #     fail-on-vuln: false
-      #   env:
-      #     DEBUG: "true"
-      # - uses: actions/upload-artifact@v3
-      #   with:
-      #     name: raw-report
-      #     path: raw-report.json
+      # Node package vulnerability check
+      - name: Vulnerability Check
+        uses: NodeSecure/ci-action@177c57fe32c75cafabe87f6e4515d277cc37ae6c #1.4.1
+        with:
+          strategy: npm
+          vulnerabilities: medium
+          warnings: off
+          reporters: console      
