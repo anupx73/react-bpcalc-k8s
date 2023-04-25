@@ -5,6 +5,7 @@ import { Container } from "react-bootstrap";
 import Form from 'react-bootstrap/Form';
 import Button from 'react-bootstrap/Button';
 import logo from './logo.png';
+import history from './history.png';
 
 function App() {
   const [name, setName] = useState("");
@@ -50,19 +51,19 @@ function App() {
   return (
     <div className="App" style={{padding: "4em"}}>
       <Container className="content">
-            <h2 className="mt-4 mb-4 fw-bold" style={{color: "#3372FF"}}>
-              <span><img src={logo} alt="Logo" width="55" height="60"/></span>
-              BP Calculator  
-            </h2>
-
-            {/* {message ? (
-              <div className="text-success text-white">
-                {" "}
-                <h5>{message} </h5>
-              </div>
-            ) : (
-              <></>
-              )} */}
+            <Form.Group class="d-flex">
+                <Form.Group class="me-auto p-2">
+                    <h4 style={{color: "#3372FF"}}><span><img src={logo} alt="Logo" width="55" height="60"/></span>&nbsp;&nbsp;BP Category Calculator</h4>
+                </Form.Group>
+                <Form.Group class="p-2">
+                    {/* <form action="#" method="GET"> */}
+                        <button type="submit" class="btn btn-outline-primary" style={{padding: 10, margin: 0}}>
+                            <h5 style={{padding: 0, margin: 0}}><span><img src={history} alt="Logo" width="24" height="24"/></span>&nbsp;History</h5>
+                        </button>
+                    {/* </form> */}
+                </Form.Group>
+            </Form.Group>
+            <hr /><br />
 
             <Form onSubmit={submitData} className="row g-3">
             <Form.Group className="mb-3" >
