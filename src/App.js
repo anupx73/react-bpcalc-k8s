@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import axios from "axios";
 import 'bootstrap/dist/css/bootstrap.css';
 import { Container } from "react-bootstrap";
 import Form from 'react-bootstrap/Form';
@@ -12,40 +11,40 @@ function App() {
   const [email, setEmail] = useState("");
   const [systolic, setSystolic] = useState("");
   const [diastolic, setDiastolic] = useState("");
-  //const [message, setMessage] = useState("");
-
-    const handleusername = (event) => {
-    const name = event.target.value;
-    setName(name);
-  };
-
-  const handleemail = (event) => {
-    const email = event.target.value;
-    setEmail(email);
-  };
-
-  const handlesystolic = (event) => {
-    const systolic = event.target.value;
-    setSystolic(systolic);
-  };
-
-  const handlediastolic = (event) => {
-    const diastolic = event.target.value;
-    setDiastolic(diastolic);
-  };  
+  const [message, setMessage] = useState("");
 
   const submitData = async (e) => {
     e.preventDefault();
-    const userdata = {
-      name: name,
-      email: email,
-      systolic: systolic,
-      diastolic: diastolic,
-    };
-    await axios
-      .post("http://localhost/api/bpcalc/", JSON.stringify(userdata))
-      .then(response => { console.log(response) })
-      .catch(err => { console.log(err) });
+    try {
+      let userdata = {
+        name: name,
+        email: email,
+        systolic: systolic,
+        diastolic: diastolic,
+      };
+      let res = await fetch("http://localhost/api/bpcalc/", {
+        method: "POST",
+        body: JSON.stringify({
+          name: name,
+          email: email,
+          systolic: systolic,
+          diastolic: diastolic,
+        }),
+      });
+      let resJson = await res.json();
+      if (res.status === 200) {
+        setName("")
+        setEmail("")
+        setSystolic("")
+        setDiastolic("")
+        setMessage("BP Calculated Succcessfully" + resJson.Category);
+      }
+      else {
+        setMessage("Some error occured!!");
+      }
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (
@@ -72,7 +71,7 @@ function App() {
                   type="text"
                   name="name"
                   className="form-control p-2"
-                  onChange={(e) => handleusername(e)}
+                  onChange={(e) => setName(e.target.value)}
                 />
             </Form.Group>
 
@@ -82,7 +81,7 @@ function App() {
                   type="text"
                   name="email"
                   className="form-control p-2"
-                  onChange={(e) => handleemail(e)}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </Form.Group>
 
@@ -94,7 +93,7 @@ function App() {
                   max="190"
                   name="systolic"
                   className="form-control p-2"
-                  onChange={(e) => handlesystolic(e)}
+                  onChange={(e) => setSystolic(e.target.value)}
                 />
               </Form.Group>
 
@@ -106,7 +105,7 @@ function App() {
                   max="100"
                   name="diastolic"
                   className="form-control p-2"
-                  onChange={(e) => handlediastolic(e)}
+                  onChange={(e) => setDiastolic(e.target.value)}
                 />
               </Form.Group>
 
@@ -115,6 +114,11 @@ function App() {
                   Calculate
                 </Button>
               </Form.Group>
+
+              <br />
+              <Form.Group className="mb-3 message">{message ? <p>{message}</p> : null}
+              </Form.Group>
+
             </Form>
       </Container>
     </div>
