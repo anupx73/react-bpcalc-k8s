@@ -16,28 +16,24 @@ function App() {
   const submitData = async (e) => {
     e.preventDefault();
     try {
-      let userdata = {
-        name: name,
-        email: email,
-        systolic: systolic,
-        diastolic: diastolic,
-      };
-      let res = await fetch("http://localhost/api/bpcalc/", {
-        method: "POST",
+      const requestOptions = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: name,
           email: email,
           systolic: systolic,
           diastolic: diastolic,
-        }),
-      });
+        })
+      };
+      let res = await fetch("http://localhost/api/bpcalc/", requestOptions);
       let resJson = await res.json();
-      if (res.status === 200) {
+      if (res.status === 202) {
         setName("")
         setEmail("")
         setSystolic("")
         setDiastolic("")
-        setMessage("BP Calculated Succcessfully" + resJson.Category);
+        setMessage("BP Calculated Succcessfully: " + resJson.message);
       }
       else {
         setMessage("Some error occured!!");
