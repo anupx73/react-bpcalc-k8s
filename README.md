@@ -3,11 +3,9 @@
 ## Overview
 
 This project demonstrates the use of microservice and its deployment to kubernetes.  
-This frontend service is powered by ReactJS which provides a UI to POST data to backend service: http://localhost/api/bpcalc/.
+This frontend service is written in ReactJS to interact with backend service written in Go.
 
- * BP Calc Backend Service: Provides blood pressure category calculation based on inputs.
-
-This project is created on top of ReactJS demo template.
+ * BP Calc Backend Service: Provides blood pressure category calculation based on inputs and stores data in MongoDB.
 
 
 ## Useful Commands
