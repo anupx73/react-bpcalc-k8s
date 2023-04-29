@@ -1,7 +1,6 @@
 services:
   frontend:
-    build:
-      context: .
-    container_name: frontend
+    image: gcr.io/tudublin/bpcalc-frontend@sha256:3b4cbf440a2413904d1b5af51e967b23f8bcd9bd2a154a94909e848dfc75e1eb
+    # build: .
     ports:
       - "8080:80"
