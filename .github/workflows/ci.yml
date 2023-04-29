@@ -57,23 +57,30 @@ jobs:
       #       -Dsonar.organization=hypheni
       #       -Dsonar.javascript.lcov.reportPaths=./coverage/lcov.info
 
-      # Node package vulnerability check
-      # - name: Vulnerability Check
-      #   uses: NodeSecure/ci-action@177c57fe32c75cafabe87f6e4515d277cc37ae6c #1.4.1
+      # Node package vulnarability scan with Synk
+      # - name: Vulnerability Check with Synk
+      #   uses: snyk/actions/node@master
+      #   continue-on-error: true
+      #   env:
+      #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       #   with:
-      #     strategy: npm
-      #     vulnerabilities: medium
-      #     warnings: off
-      #     reporters: console
+      #     args: --sarif-file-output=snyk.sarif
+      #           --severity-threshold=high
+      #           --dev
 
-      # Node vulnarability scan using Synk
       - name: Vulnerability Check with Synk
-        uses: snyk/actions/node@master
-        continue-on-error: true
+        uses: snyk/actions/setup@master
+      - uses: actions/setup-go@v1
+        with:
+          go-version: '1.20'
+      - name: Snyk monitor
+        run: snyk test
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           args: --sarif-file-output=snyk.sarif
+                --severity-threshold=high
+                --dev          
       
       - name: Upload Synk result to GitHub
         uses: github/codeql-action/upload-sarif@v2
