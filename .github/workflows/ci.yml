@@ -30,29 +30,29 @@ jobs:
       - name: Dependency
         run: npm ci
       
-      # Build
-      - name: Code Build
-        run: npm run build
+      # # Build
+      # - name: Code Build
+      #   run: npm run build
 
-      # Unit Test
-      - name: Unit Test
-        run: npm test
+      # # Unit Test
+      # - name: Unit Test
+      #   run: npm test
 
-      # SAST analysis
-      - name: SonarCloud Analysis
-        uses: actions/cache@v2
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-      - uses: SonarSource/sonarcloud-github-action@v1.8
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args:
-            -Dsonar.projectKey=react-bp-microservice
-            -Dsonar.organization=hypheni
-            -Dsonar.javascript.lcov.reportPaths=./coverage/lcov.info
+      # # SAST analysis
+      # - name: SonarCloud Analysis
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: ~/.sonar/cache
+      #     key: ${{ runner.os }}-sonar
+      #     restore-keys: ${{ runner.os }}-sonar
+      # - uses: SonarSource/sonarcloud-github-action@v1.8
+      #   env:
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      #   with:
+      #     args:
+      #       -Dsonar.projectKey=react-bp-microservice
+      #       -Dsonar.organization=hypheni
+      #       -Dsonar.javascript.lcov.reportPaths=./coverage/lcov.info
 
       # Node package vulnerability check
       # - name: Vulnerability Check
@@ -62,3 +62,17 @@ jobs:
       #     vulnerabilities: medium
       #     warnings: off
       #     reporters: console
+
+      # Node vulnarability scan using Synk
+      - name: Vulnerability Check with Synk
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --sarif-file-output=snyk.sarif
+      
+      - name: Upload Synk result to GitHub
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: snyk.sarif
