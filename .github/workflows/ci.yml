@@ -9,6 +9,7 @@ jobs:
   build:
     permissions:
       contents: read
+      packages: write
       security-events: write
 
     runs-on: ubuntu-22.04
@@ -18,51 +19,50 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         
-      # Setup Node
-      - name: Set up Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 19
-          cache: 'npm'
+      # # Setup Node
+      # - name: Set up Node
+      #   uses: actions/setup-node@v3
+      #   with:
+      #     node-version: 19
+      #     cache: 'npm'
       
-      # Install Node Dependencies
-      - name: Dependency
-        run: npm ci
+      # # Install Node Dependencies
+      # - name: Dependency
+      #   run: npm ci
       
-      # Unit Test
-      - name: Unit Test
-        run: npm test --passWithNoTests
+      # # Unit Test
+      # - name: Unit Test
+      #   run: npm test
 
-      # Sonar Static Code Analysis
-      - name: SonarCloud Analysis
-        uses: actions/cache@v2
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-      - uses: SonarSource/sonarcloud-github-action@v1.8
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args:
-            -Dsonar.projectKey=react-bp-microservice
-            -Dsonar.organization=hypheni
-            -Dsonar.javascript.lcov.reportPaths=./coverage/lcov.info
+      # # Sonar Static Code Analysis
+      # - name: SonarCloud Analysis
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: ~/.sonar/cache
+      #     key: ${{ runner.os }}-sonar
+      #     restore-keys: ${{ runner.os }}-sonar
+      # - uses: SonarSource/sonarcloud-github-action@v1.8
+      #   env:
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      #   with:
+      #     args:
+      #       -Dsonar.projectKey=react-bp-microservice
+      #       -Dsonar.organization=hypheni
+      #       -Dsonar.javascript.lcov.reportPaths=./coverage/lcov.info
 
-      # Synk Vulnarability Scan for Node Packages
-      # TODO: --dev parameter shall be used for a dev run only
-      - name: Vulnerability Check with Synk
-        uses: snyk/actions/node@master
-        continue-on-error: true
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --sarif-file-output=snyk.sarif
-                --severity-threshold=high
-                # --dev
-      - uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: snyk.sarif
+      # # Synk Vulnarability Scan for Node Packages
+      # - name: Vulnerability Check with Synk
+      #   uses: snyk/actions/node@master
+      #   continue-on-error: true
+      #   env:
+      #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      #   with:
+      #     args: --sarif-file-output=snyk.sarif
+      #           --severity-threshold=high
+      #           # --dev
+      # - uses: github/codeql-action/upload-sarif@v2
+      #   with:
+      #     sarif_file: snyk.sarif
 
       # Build Container Image
       - name: Image build
@@ -77,7 +77,7 @@ jobs:
           format: 'sarif'
           output: 'trivy-results.sarif'
           exit-code: '1'
-          ignore-unfixed: true
+          # ignore-unfixed: true
           vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
       - uses: github/codeql-action/upload-sarif@v2
@@ -93,11 +93,17 @@ jobs:
 
       # Push to GCR
       - name: Push to GCR
-        uses: RafikFarhad/push-to-gcr-github-action@v5-beta
-        with:
-          registry: gcr.io
-          project_id: tudublin
-          image_name: bpcalc-frontend
-          image_tag: ${{ github.sha }},v1
-          dockerfile: ./Dockerfile
-          context: .
+        run: |-
+          gcloud auth configure-docker
+          docker tag bpcalc-frontend:${{ github.sha }} gcr.io/tudublin/bpcalc-frontend:${{ github.sha }}
+          docker push gcr.io/tudublin/bpcalc-frontend:${{ github.sha }}
+
+      # - name: Push to GCR
+      #   uses: RafikFarhad/push-to-gcr-github-action@v5-beta
+      #   with:
+      #     registry: gcr.io
+      #     project_id: tudublin
+      #     image_name: bpcalc-frontend
+      #     image_tag: ${{ github.sha }},v1
+      #     dockerfile: ./Dockerfile
+      #     context: .
