@@ -2,23 +2,40 @@
 
 ## Overview
 
-This project demonstrates the use of microservice and its deployment to kubernetes.  
+This project demonstrates the use of microservice and its deployment to kubernetes.
 This frontend service is written in ReactJS to interact with backend service written in Go.
-
- * BP Calc Backend Service: Provides blood pressure category calculation based on inputs and stores data in MongoDB.
-
 
 ## Useful Commands
 ```
-# Launchh application
+# Development
+npm i
 npm start
-
-# Launches the test runner in the interactive watch mode.
 npm test
 
-# Builds the app to production grade in build folder.
+# Production
+npm ci
 npm run build
 
-# Docker compose to run the service with nginx
+# Docker
 docker compose up -d
 ```
+
+## Note on Package JSON
+This project adds `react-scripts` in `devDependencies` section of package.json to avoid vulnerability in production environment. This caused a version conflict of typescript node package in `package-lock.json` while using `npm ci`. Hence to resolve this `package-lock.json` has been manually updated with the following.
+
+**from**
+```
+  "node_modules/typescript": {
+    "version": "5.0.4",
+    "resolved": "https://registry.npmjs.org/typescript/-/typescript-5.0.4.tgz",
+    "integrity": "sha512-cW9T5W9xY37cc+jfEnaUvX91foxtHkza3Nw3wkoF4sSlKn0MONdkdEndig/qPBWXNkmplh3NzayQzCiHM4/hqw==",
+```
+**to**
+```
+  "node_modules/typescript": {
+    "version": "4.9.5",
+    "resolved": "https://registry.npmjs.org/typescript/-/typescript-4.9.5.tgz",
+    "integrity": "sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g==",
+```
+
+In future version `react-scripts` dependency shall be removed and an improved granual dependency [approach](https://dev.to/ivadyhabimana/how-to-create-a-react-app-without-using-create-react-app-a-step-by-step-guide-30nl) will be used. 

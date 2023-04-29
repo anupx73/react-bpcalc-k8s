@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      # Git checkout
+      # Git Checkout
       - name: Checkout
         uses: actions/checkout@v3
         
@@ -29,35 +29,32 @@ jobs:
           node-version: 19
           cache: 'npm'
       
-      # Fetch Dependencies
+      # Install Node Dependencies
       - name: Dependency
         run: npm ci
       
-      # # Build
-      # - name: Code Build
-      #   run: npm run build
+      # Unit Test
+      - name: Unit Test
+        run: npm test
 
-      # # Unit Test
-      # - name: Unit Test
-      #   run: npm test
+      # Sonar Static Code Analysis
+      - name: SonarCloud Analysis
+        uses: actions/cache@v2
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      - uses: SonarSource/sonarcloud-github-action@v1.8
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args:
+            -Dsonar.projectKey=react-bp-microservice
+            -Dsonar.organization=hypheni
+            -Dsonar.javascript.lcov.reportPaths=./coverage/lcov.info
 
-      # # SAST analysis
-      # - name: SonarCloud Analysis
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: ~/.sonar/cache
-      #     key: ${{ runner.os }}-sonar
-      #     restore-keys: ${{ runner.os }}-sonar
-      # - uses: SonarSource/sonarcloud-github-action@v1.8
-      #   env:
-      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      #   with:
-      #     args:
-      #       -Dsonar.projectKey=react-bp-microservice
-      #       -Dsonar.organization=hypheni
-      #       -Dsonar.javascript.lcov.reportPaths=./coverage/lcov.info
-
-      # Node package vulnarability scan with Synk
+      # Synk Vulnarability Scan for Node Packages
+      # TODO: --dev parameter shall be used for a dev run only
       - name: Vulnerability Check with Synk
         uses: snyk/actions/node@master
         continue-on-error: true
@@ -67,8 +64,6 @@ jobs:
           args: --sarif-file-output=snyk.sarif
                 --severity-threshold=high
                 # --dev
-      
-      - name: Upload Synk result to GitHub
-        uses: github/codeql-action/upload-sarif@v2
+      - uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: snyk.sarif
