@@ -1,3 +1,5 @@
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=react-bp-microservice&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=react-bp-microservice)
+
 # BP Calc Frontend Service
 
 ## Overview
