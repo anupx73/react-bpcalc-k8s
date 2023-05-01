@@ -1,6 +1,6 @@
 services:
   frontend:
-    image: gcr.io/tudublin/bpcalc-frontend@sha256:3b4cbf440a2413904d1b5af51e967b23f8bcd9bd2a154a94909e848dfc75e1eb
-    # build: .
+    build: .
+    #image: gcr.io/tudublin/bpcalc-frontend@latest
     ports:
-      - "8080:80"
+      - "8080:8080"
