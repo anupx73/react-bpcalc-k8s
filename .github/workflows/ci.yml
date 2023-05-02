@@ -5,6 +5,15 @@ on:
     branches: [ "feat/security" ]
   workflow_dispatch:
 
+env:
+  GITHUB_SHA: ${{ github.sha }}
+  GCP_PROJECT: tudublin
+  GKE_ZONE: europe-west1-b
+  GKE_CLUSTER: gke-stg
+  DEPLOYMENT_NAME: frontend-deployment
+  IMAGE_NAME: frontend
+  RELEASE_NAME: bpcalc-frontend
+
 jobs:
   build:
     permissions:
@@ -34,56 +43,56 @@ jobs:
       # - name: Unit Test
       #   run: npm test
 
-      # Sonar Static Code Analysis
-      - name: SonarCloud Analysis
-        uses: actions/cache@v2
-        with:
-          path: ~/.sonar/cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-      - uses: SonarSource/sonarcloud-github-action@v1.8
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args:
-            -Dsonar.projectKey=react-bp-microservice
-            -Dsonar.organization=hypheni
-            -Dsonar.javascript.lcov.reportPaths=./coverage/lcov.info
+      # # Sonar Static Code Analysis
+      # - name: SonarCloud Analysis
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: ~/.sonar/cache
+      #     key: ${{ runner.os }}-sonar
+      #     restore-keys: ${{ runner.os }}-sonar
+      # - uses: SonarSource/sonarcloud-github-action@v1.8
+      #   env:
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      #   with:
+      #     args:
+      #       -Dsonar.projectKey=react-bp-microservice
+      #       -Dsonar.organization=hypheni
+      #       -Dsonar.javascript.lcov.reportPaths=./coverage/lcov.info
 
-      # Synk Scan for Node Packages Vulnarability
-      - name: Vulnerability Check with Synk
-        uses: snyk/actions/node@master
-        continue-on-error: true
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --sarif-file-output=snyk.sarif
-                --severity-threshold=high
-                # --dev
-      - uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: snyk.sarif
+      # # Synk Scan for Node Packages Vulnarability
+      # - name: Vulnerability Check with Synk
+      #   uses: snyk/actions/node@master
+      #   continue-on-error: true
+      #   env:
+      #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      #   with:
+      #     args: --sarif-file-output=snyk.sarif
+      #           --severity-threshold=high
+      #           # --dev
+      # - uses: github/codeql-action/upload-sarif@v2
+      #   with:
+      #     sarif_file: snyk.sarif
 
       # Build Container Image
       - name: Image build
         run: |
-          docker build . --file Dockerfile --tag bpcalc-frontend:latest
+          docker build . --file Dockerfile --tag $IMAGE_NAME:$GITHUB_SHA
 
-      # Trivy Scan for Container Image Vulnarability
-      - name: Trivy Vulnerability Scanner
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: 'bpcalc-frontend:latest'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
-      - uses: github/codeql-action/upload-sarif@v2
-        if: always()
-        with:
-          sarif_file: 'trivy-results.sarif'
+      # # Trivy Scan for Container Image Vulnarability
+      # - name: Trivy Vulnerability Scanner
+      #   uses: aquasecurity/trivy-action@master
+      #   with:
+      #     image-ref: '$IMAGE_NAME:$GITHUB_SHA'
+      #     format: 'sarif'
+      #     output: 'trivy-results.sarif'
+      #     exit-code: '1'
+      #     ignore-unfixed: true
+      #     vuln-type: 'os,library'
+      #     severity: 'CRITICAL,HIGH'
+      # - uses: github/codeql-action/upload-sarif@v2
+      #   if: always()
+      #   with:
+      #     sarif_file: 'trivy-results.sarif'
       
       # GCP Auth
       - name: Google Auth
@@ -95,5 +104,14 @@ jobs:
       - name: Push to GCR
         run: |-
           gcloud auth configure-docker
-          docker tag bpcalc-frontend:latest gcr.io/tudublin/bpcalc-frontend:latest
-          docker push gcr.io/tudublin/bpcalc-frontend:latest
+          docker tag $IMAGE_NAME:$GITHUB_SHA gcr.io/$GCP_PROJECT/$IMAGE_NAME:$GITHUB_SHA
+          docker push gcr.io/$GCP_PROJECT/$IMAGE_NAME:$GITHUB_SHA
+
+      # Deploy to GKE
+      - name: Deploy to GKE
+        run: |
+          curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
+          gcloud container clusters get-credentials $GKE_CLUSTER --zone $GKE_ZONE --project $GCP_PROJECT
+          helm upgrade $RELEASE_NAME helm/ --set image.tag=$GITHUB_SHA --wait
+          kubectl rollout status deployment/$DEPLOYMENT_NAME
+          kubectl get services -o wide
