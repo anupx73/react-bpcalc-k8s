@@ -110,7 +110,6 @@ jobs:
       # Deploy to GKE
       - name: Deploy to GKE
         run: |
-          curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 | bash
           gcloud container clusters get-credentials $GKE_CLUSTER --zone $GKE_ZONE --project $GCP_PROJECT
           helm upgrade $RELEASE_NAME helm/ --set image.tag=$GITHUB_SHA --wait
           kubectl rollout status deployment/$DEPLOYMENT_NAME
