@@ -2,7 +2,7 @@ name: Frontend Build
 
 on:
   push:
-    branches: [ "feat/security" ]
+    branches: [ "feat/helm" ]
   workflow_dispatch:
 
 env:
