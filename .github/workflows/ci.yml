@@ -28,16 +28,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         
-      # Setup Node
-      - name: Set up Node
-        uses: actions/setup-node@v3
-        with:
-          node-version: 19
-          cache: 'npm'
+      # # Setup Node
+      # - name: Set up Node
+      #   uses: actions/setup-node@v3
+      #   with:
+      #     node-version: 19
+      #     cache: 'npm'
       
-      # Install Node Dependencies
-      - name: Dependency
-        run: npm ci
+      # # Install Node Dependencies
+      # - name: Dependency
+      #   run: npm ci
       
       # # Unit Test
       # - name: Unit Test
@@ -73,10 +73,10 @@ jobs:
       #   with:
       #     sarif_file: snyk.sarif
 
-      # Build Container Image
-      - name: Image build
-        run: |
-          docker build . --file Dockerfile --tag $IMAGE_NAME:$GITHUB_SHA
+      # # Build Container Image
+      # - name: Image build
+      #   run: |
+      #     docker build . --file Dockerfile --tag $IMAGE_NAME:$GITHUB_SHA
 
       # # Trivy Scan for Container Image Vulnarability
       # - name: Trivy Vulnerability Scanner
@@ -100,18 +100,19 @@ jobs:
         with:
           credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
 
-      # Push to GCR
-      - name: Push to GCR
-        run: |-
-          gcloud auth configure-docker
-          docker tag $IMAGE_NAME:$GITHUB_SHA gcr.io/$GCP_PROJECT/$IMAGE_NAME:$GITHUB_SHA
-          docker push gcr.io/$GCP_PROJECT/$IMAGE_NAME:$GITHUB_SHA
+      # # Push to GCR
+      # - name: Push to GCR
+      #   run: |-
+      #     gcloud auth configure-docker
+      #     docker tag $IMAGE_NAME:$GITHUB_SHA gcr.io/$GCP_PROJECT/$IMAGE_NAME:$GITHUB_SHA
+      #     docker push gcr.io/$GCP_PROJECT/$IMAGE_NAME:$GITHUB_SHA
 
       # Deploy to GKE
+      # gcloud components install gke-gcloud-auth-plugin
       - name: Deploy to GKE
         run: |
-          gcloud components install gke-gcloud-auth-plugin
+          sudo apt-get install google-cloud-sdk-gke-gcloud-auth-plugin
           gcloud container clusters get-credentials $GKE_CLUSTER --zone $GKE_ZONE --project $GCP_PROJECT
-          helm upgrade $RELEASE_NAME helm/ --set image.tag=$GITHUB_SHA --wait
+          helm upgrade $RELEASE_NAME helm/ --set image.tag=latest --wait
           kubectl rollout status deployment/$DEPLOYMENT_NAME
           kubectl get services -o wide
