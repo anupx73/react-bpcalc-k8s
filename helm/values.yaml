@@ -2,28 +2,9 @@ replicaCount: 1
 
 image:
   repository: gcr.io/tudublin/bpcalc-frontend
-  tag: "latest"
+  tag: latest
   pullPolicy: IfNotPresent
 
-service:
-  name: bpcalc-service
-  type: ClusterIP
+container:
+  name: frontend
   port: 8080
-  targetPort: 80
-
-ingress:
-  enabled: true
-  className: ""
-  annotations:
-    kubernetes.io/ingress.class: gce
-    # kubernetes.io/tls-acme: "true"
-  hosts:
-    - host:
-      paths:
-        - path: /
-          pathType: Prefix
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
-
