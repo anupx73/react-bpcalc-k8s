@@ -1,7 +1,7 @@
 replicaCount: 1
 
 image:
-  repository: gcr.io/tudublin/bpcalc-frontend
+  repository: gcr.io/tudublin/frontend
   tag: latest
   pullPolicy: IfNotPresent
 
