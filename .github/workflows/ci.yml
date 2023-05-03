@@ -94,15 +94,17 @@ jobs:
       #   with:
       #     sarif_file: 'trivy-results.sarif'
       
-      # GCP Auth
+      # GCP Set up
       - name: GCP Config
         uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
-      - uses: google-github-actions/setup-gcloud@v1
+      - name: GCP Auth
+        uses: google-github-actions/setup-gcloud@v1
         with:
           version: latest
-      - run: |-
+      - name: GCP Update
+        run: |-
           gcloud components install gke-gcloud-auth-plugin
           gcloud auth configure-docker
           gcloud container clusters get-credentials $GKE_CLUSTER --zone $GKE_ZONE --project $GCP_PROJECT
@@ -116,6 +118,6 @@ jobs:
       # Deploy to GKE
       - name: Deploy to GKE
         run: |
-          helm upgrade $RELEASE_NAME helm/ --set image.tag=latest --wait
+          helm upgrade $RELEASE_NAME helm/ --set image.tag=$GITHUB_SHA --wait
           kubectl rollout status deployment/$DEPLOYMENT_NAME
           kubectl get services -o wide
