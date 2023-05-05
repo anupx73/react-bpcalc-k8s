@@ -4,7 +4,7 @@ function History() {
   const [data, setData] = useState([]);
 
   const fetchData = () => {
-    fetch(`http://localhost/api/bpcalc/`)
+    fetch(`http://backend-service/api/bpcalc/`)
       .then((response) => response.json())
       .then((actualData) => {
         console.log(actualData);

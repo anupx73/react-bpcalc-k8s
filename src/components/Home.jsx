@@ -20,7 +20,7 @@ function Home() {
           diastolic: diastolic,
         })
       };
-      let res = await fetch("http://localhost/api/bpcalc/", requestOptions);
+      let res = await fetch("http://backend-service/api/bpcalc/", requestOptions);
       let resJson = await res.json();
       if (res.status === 202) {
         setName("")
