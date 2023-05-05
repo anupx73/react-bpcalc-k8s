@@ -15,10 +15,10 @@ spec:
             name: frontend-service
             port:
               number: 80
-      # - path: /api/*
-      #   pathType: ImplementationSpecific
-      #   backend:
-      #     service:
-      #       name: backend-service
-      #       port:
-      #         number: 80
+      - path: /api/*
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: backend-service
+            port:
+              number: 80
