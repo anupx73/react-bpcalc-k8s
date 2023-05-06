@@ -2,7 +2,7 @@ replicaCount: 1
 
 image:
   repository: gcr.io/tudublin/frontend
-  tag: v1.0.37
+  tag: v1.0.39
   pullPolicy: IfNotPresent
 
 container:

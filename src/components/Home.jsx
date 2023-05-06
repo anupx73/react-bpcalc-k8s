@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import config from '../../config.json';
 
 function Home() {
   const [name, setName] = useState("");
@@ -20,7 +21,7 @@ function Home() {
           diastolic: diastolic,
         })
       };
-      let res = await fetch("http://backend-service/api/bpcalc/", requestOptions);
+      let res = await fetch(config.backend.url + '/api/bpcalc/', requestOptions);
       let resJson = await res.json();
       if (res.status === 202) {
         setName("")
