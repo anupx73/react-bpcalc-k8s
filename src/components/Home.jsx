@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import config from '../../config.json';
+import config from '../config.json';
 
 function Home() {
   const [name, setName] = useState("");
