@@ -20,7 +20,7 @@ function Home() {
           diastolic: diastolic,
         })
       };
-      let backendUrl = 'http://' + window.location.hostname + '/api/bpcalc/'
+      let backendUrl = 'http://' + window.location.hostname + '/api/'
       let res = await fetch(backendUrl, requestOptions);
       let resJson = await res.json();
       if (res.status === 202) {

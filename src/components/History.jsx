@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 
 function History() {
   const [data, setData] = useState([]);
-  let backendUrl = 'http://' + window.location.hostname + '/api/bpcalc/'
+  let backendUrl = 'http://' + window.location.hostname + '/api/'
   const fetchData = () => {
     fetch(backendUrl)
       .then((response) => response.json())
