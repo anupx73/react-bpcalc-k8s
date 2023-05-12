@@ -115,7 +115,7 @@ jobs:
       
       # Config dev env on feature branch push
       - name: Config Dev Env
-        if: startsWith(github.ref,'feat') == true
+        if: github.ref != 'refs/heads/main'
         run: |-
           gcloud components install gke-gcloud-auth-plugin
           gcloud auth configure-docker
