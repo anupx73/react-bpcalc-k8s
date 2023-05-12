@@ -2,7 +2,9 @@ name: Frontend Build
 
 on:
   push:
-    branches: [ "feat/helm" ]
+    branches:
+      - main
+      - 'feat/**'
   workflow_dispatch:
 
 env:
@@ -94,13 +96,11 @@ jobs:
       #   with:
       #     sarif_file: 'trivy-results.sarif'
   
-      # GCP Auth
+      # GCP Set up
       - name: GCP Auth
         uses: google-github-actions/auth@v1
         with:
           credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
-      
-      # GCP Config
       - name: GCP Config
         uses: google-github-actions/setup-gcloud@v1
         with:
@@ -130,14 +130,14 @@ jobs:
           version: latest
       
       # Config dev env on feat branch push
-      - name: Config Dev Env
+      - name: Connecting to Dev Env
         run: |-
           gcloud components install gke-gcloud-auth-plugin
           gcloud auth configure-docker
           gcloud container clusters get-credentials $GKE_CLUSTER_DEV --zone $GKE_ZONE --project $GCP_PROJECT
 
       # Deploy to GKE Dev
-      - name: Deploy to GKE Dev
+      - name: Deploying to GKE Dev
         run: |
           helm upgrade $RELEASE_NAME helm/ --install --set image.tag=$IMAGE_TAG --wait
           kubectl rollout status deployment/$DEPLOYMENT_NAME
@@ -160,15 +160,45 @@ jobs:
           version: latest
       
       # Config staging env on main branch push
-      - name: Config Staging Env
+      - name: Connecting to Staging Env
         run: |-
           gcloud components install gke-gcloud-auth-plugin
           gcloud auth configure-docker
           gcloud container clusters get-credentials $GKE_CLUSTER_STG --zone $GKE_ZONE --project $GCP_PROJECT
 
       # Deploy to GKE Stg
-      - name: Deploy to GKE Stg
+      - name: Deploying to GKE Stg
         run: |
           helm upgrade $RELEASE_NAME helm/ --install --set image.tag=$IMAGE_TAG --wait
           kubectl rollout status deployment/$DEPLOYMENT_NAME
           kubectl get services -o wide
+
+  # -------------- Testing ---------------
+  continuous-testing:
+    needs: deploy-dev
+    if: github.ref == 'refs/heads/qa'
+    runs-on: ubuntu-22.04
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 19
+
+    - name: Cache node modules
+      id: cache-nodemodules
+      uses: actions/cache@v2
+      env:
+        cache-name: cache-node-modules
+      with:
+        path: node_modules
+        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+        restore-keys: |
+          ${{ runner.os }}-build-${{ env.cache-name }}-
+          ${{ runner.os }}-build-
+          ${{ runner.os }}-
+
+    - name: Install dependencies
+      run: npm ci; npx playwright install --with-deps
+
+    - name: Run Playwright tests
+      run: npx playwright test tests/e2e.spec.ts
