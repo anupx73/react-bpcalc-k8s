@@ -22,6 +22,14 @@ npm run build
 docker compose up -d
 ```
 
+## Manually Image Build and Push
+
+```
+docker build . --file Dockerfile --tag frontend:v1.0.91-manual;
+docker tag frontend:v1.0.91-manual gcr.io/tudublin/frontend:v1.0.91-manual;
+docker push gcr.io/tudublin/frontend:v1.0.91-manual
+```
+
 ## Note on Package JSON
 This project adds `react-scripts` in `devDependencies` section of package.json to avoid vulnerability in production environment. This caused a version conflict of typescript node package in `package-lock.json` while using `npm ci`. Hence to resolve this `package-lock.json` has been manually updated with the following.
 
