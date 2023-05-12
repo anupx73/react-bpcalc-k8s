@@ -1,0 +1,174 @@
+name: Frontend Build
+
+on:
+  push:
+    branches: [ "feat/helm" ]
+  workflow_dispatch:
+
+env:
+  GCP_PROJECT: tudublin
+  GKE_ZONE: europe-west1-b
+  GKE_CLUSTER_DEV: gke-dev
+  GKE_CLUSTER_STG: gke-stg
+  DEPLOYMENT_NAME: frontend-deployment
+  IMAGE_NAME: frontend
+  IMAGE_TAG: v1.0.${{ github.run_number }}
+  RELEASE_NAME: frontend
+
+jobs:
+  # -------------- CI Build ---------------
+  build:
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+    runs-on: ubuntu-22.04
+    steps:
+      # Git Checkout
+      - name: Checkout
+        uses: actions/checkout@v3
+        
+      # # Setup Node
+      # - name: Set up Node
+      #   uses: actions/setup-node@v3
+      #   with:
+      #     node-version: 19
+      #     cache: 'npm'
+      
+      # # Install Node Dependencies
+      # - name: Dependency
+      #   run: npm ci
+      
+      # # Unit Test
+      # - name: Unit Test
+      #   run: npm test
+
+      # # Sonar Static Code Analysis
+      # - name: SonarCloud Analysis
+      #   uses: actions/cache@v2
+      #   with:
+      #     path: ~/.sonar/cache
+      #     key: ${{ runner.os }}-sonar
+      #     restore-keys: ${{ runner.os }}-sonar
+      # - uses: SonarSource/sonarcloud-github-action@v1.8
+      #   env:
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      #   with:
+      #     args:
+      #       -Dsonar.projectKey=react-bp-microservice
+      #       -Dsonar.organization=hypheni
+      #       -Dsonar.javascript.lcov.reportPaths=./coverage/lcov.info
+
+      # # Synk Scan for Node Packages Vulnarability
+      # - name: Vulnerability Check with Synk
+      #   uses: snyk/actions/node@master
+      #   continue-on-error: true
+      #   env:
+      #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      #   with:
+      #     args: --sarif-file-output=snyk.sarif
+      #           --severity-threshold=high
+      #           # --dev
+      # - uses: github/codeql-action/upload-sarif@v2
+      #   with:
+      #     sarif_file: snyk.sarif
+
+      # Build Container Image
+      - name: Image build
+        run: |
+          docker build . --file Dockerfile --tag $IMAGE_NAME:$IMAGE_TAG
+
+      # # Trivy Scan for Container Image Vulnarability
+      # - name: Trivy Vulnerability Scanner
+      #   uses: aquasecurity/trivy-action@master
+      #   with:
+      #     image-ref: '$IMAGE_NAME:$IMAGE_TAG'
+      #     format: 'sarif'
+      #     output: 'trivy-results.sarif'
+      #     exit-code: '1'
+      #     ignore-unfixed: true
+      #     vuln-type: 'os,library'
+      #     severity: 'CRITICAL,HIGH'
+      # - uses: github/codeql-action/upload-sarif@v2
+      #   if: always()
+      #   with:
+      #     sarif_file: 'trivy-results.sarif'
+  
+      # GCP Auth
+      - name: GCP Auth
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
+      
+      # GCP Config
+      - name: GCP Config
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          version: latest
+
+      # Push to GCR
+      - name: Push to GCR
+        run: |-
+          gcloud auth configure-docker
+          docker tag $IMAGE_NAME:$IMAGE_TAG gcr.io/$GCP_PROJECT/$IMAGE_NAME:$IMAGE_TAG
+          docker push gcr.io/$GCP_PROJECT/$IMAGE_NAME:$IMAGE_TAG
+
+  # -------------- CD to Dev ---------------
+  deploy-dev:
+    if: github.ref != 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-22.04
+    steps:
+      # GCP Set up
+      - name: GCP Auth
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
+      - name: GCP Config
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          version: latest
+      
+      # Config dev env on feat branch push
+      - name: Config Dev Env
+        run: |-
+          gcloud components install gke-gcloud-auth-plugin
+          gcloud auth configure-docker
+          gcloud container clusters get-credentials $GKE_CLUSTER_DEV --zone $GKE_ZONE --project $GCP_PROJECT
+
+      # Deploy to GKE Dev
+      - name: Deploy to GKE Dev
+        run: |
+          helm upgrade $RELEASE_NAME helm/ --install --set image.tag=$IMAGE_TAG --wait
+          kubectl rollout status deployment/$DEPLOYMENT_NAME
+          kubectl get services -o wide
+
+  # -------------- CD to Stg ---------------
+  deploy-stg:
+    if: github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-22.04
+    steps:
+      # GCP Set up
+      - name: GCP Auth
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
+      - name: GCP Config
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          version: latest
+      
+      # Config staging env on main branch push
+      - name: Config Staging Env
+        run: |-
+          gcloud components install gke-gcloud-auth-plugin
+          gcloud auth configure-docker
+          gcloud container clusters get-credentials $GKE_CLUSTER_STG --zone $GKE_ZONE --project $GCP_PROJECT
+
+      # Deploy to GKE Stg
+      - name: Deploy to GKE Stg
+        run: |
+          helm upgrade $RELEASE_NAME helm/ --install --set image.tag=$IMAGE_TAG --wait
+          kubectl rollout status deployment/$DEPLOYMENT_NAME
+          kubectl get services -o wide

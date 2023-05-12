@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
+import config from '../config.json';
 
 function History() {
   const [data, setData] = useState([]);
-
+  let backendUrl = 'http://' + window.location.hostname + '/api/'
   const fetchData = () => {
-    fetch(`http://localhost/api/bpcalc/`)
+    fetch(backendUrl)
       .then((response) => response.json())
       .then((actualData) => {
         console.log(actualData);

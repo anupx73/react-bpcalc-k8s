@@ -1,0 +1,10 @@
+replicaCount: 1
+
+image:
+  repository: gcr.io/tudublin/frontend
+  tag: v1.0.92-manual
+  pullPolicy: Always
+
+container:
+  name: frontend
+  port: 8080

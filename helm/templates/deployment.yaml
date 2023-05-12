@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.container.name }}-deployment
+spec:
+  selector:
+    matchLabels:
+      repo: bpcalc
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        repo: bpcalc
+    spec:
+      containers:
+      - name: {{ .Values.container.name }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        env:
+        - name: "PORT"
+          value: "{{ .Values.container.port }}"
