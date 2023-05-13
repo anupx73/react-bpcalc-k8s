@@ -211,9 +211,8 @@ jobs:
     - name: Penetration Testing
       run: |
         export BPCALC_URL=$(jq '.frontend.url' src/config.json)
-        echo $BPCALC_URL
         docker pull owasp/zap2docker-weekly
-        docker run -v /tmp:/zap/wrk/:rw --user root -t owasp/zap2docker-weekly zap-baseline.py -t "http://test.k6.io" -I -r zapreport.html
+        docker run -v /tmp:/zap/wrk/:rw --user root -t owasp/zap2docker-weekly zap-baseline.py -t $BPCALC_URL -I -r zapreport.html
 
     # Test Report Upload
     - name: Uploading reports
