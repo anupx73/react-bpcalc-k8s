@@ -119,6 +119,10 @@ jobs:
     needs: build
     runs-on: ubuntu-22.04
     steps:
+      # Git Checkout
+      - name: Checkout
+        uses: actions/checkout@v3
+      
       # GCP Set up
       - name: GCP Auth
         uses: google-github-actions/auth@v1
@@ -149,6 +153,10 @@ jobs:
     needs: build
     runs-on: ubuntu-22.04
     steps:
+      # Git Checkout
+      - name: Checkout
+        uses: actions/checkout@v3
+
       # GCP Set up
       - name: GCP Auth
         uses: google-github-actions/auth@v1
