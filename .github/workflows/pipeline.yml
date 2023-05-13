@@ -76,26 +76,41 @@ jobs:
       #   with:
       #     sarif_file: snyk.sarif
 
-      # # Build Container Image
-      # - name: Image build
-      #   run: |
-      #     docker build . --file Dockerfile --tag $IMAGE_NAME:$IMAGE_TAG
+      # Build Container Image
+      - name: Image build
+        run: |
+          docker build . --file Dockerfile --tag $IMAGE_NAME:$IMAGE_TAG
 
-      # Trivy Scan for Container Image Vulnarability
-      - name: Trivy Image Scanning for Vulnarability
-        uses: aquasecurity/trivy-action@master
+      # Container Vulnerability Scan
+      - name: Scan Container for Vulnerabilities
+        continue-on-error: true
+        uses: snyk/actions/docker@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
-          image-ref: nginx:stable-alpine #'$IMAGE_NAME:$IMAGE_TAG'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          severity: 'CRITICAL,HIGH'
-      - uses: github/codeql-action/upload-sarif@v2
-        if: always()
+          image: $IMAGE_NAME:$IMAGE_TAG
+          args: --file=Dockerfile
+      
+      - name: Upload Scan Result to GitHub Code Scanning
+        uses: github/codeql-action/upload-sarif@v2
         with:
-          sarif_file: 'trivy-results.sarif'
+          sarif_file: snyk.sarif
+
+      # # Trivy Scan for Container Image Vulnarability
+      # - name: Trivy Image Scanning for Vulnarability
+      #   uses: aquasecurity/trivy-action@master
+      #   with:
+      #     image-ref: nginx:stable-alpine #'$IMAGE_NAME:$IMAGE_TAG'
+      #     format: 'sarif'
+      #     output: 'trivy-results.sarif'
+      #     exit-code: '1'
+      #     ignore-unfixed: true
+      #     vuln-type: 'os,library'
+      #     severity: 'CRITICAL,HIGH'
+      # - uses: github/codeql-action/upload-sarif@v2
+      #   if: always()
+      #   with:
+      #     sarif_file: 'trivy-results.sarif'
   
       # GCP Set up
       - name: GCP Auth
