@@ -17,9 +17,6 @@ env:
   IMAGE_TAG: v1.0.${{ github.run_number }}
   RELEASE_NAME: frontend
 
-permissions:
-  contents: read
-
 jobs:
   # -------------- CI Build ---------------
   build:
@@ -27,7 +24,6 @@ jobs:
       contents: read
       packages: write
       security-events: write
-      actions: read
     runs-on: ubuntu-22.04
     steps:
       # Git Checkout
@@ -80,19 +76,21 @@ jobs:
       #   with:
       #     sarif_file: snyk.sarif
 
-      # Build Container Image
-      - name: Image build
-        run: |
-          docker build --tag $IMAGE_NAME:$IMAGE_TAG .
+      # # Build Container Image
+      # - name: Image build
+      #   run: |
+      #     docker build . --file Dockerfile --tag $IMAGE_NAME:$IMAGE_TAG
 
       # Trivy Scan for Container Image Vulnarability
-      - name: Trivy Vulnerability Scanner
-        uses: aquasecurity/trivy-action@7b7aa264d83dc58691451798b4d117d53d21edfe
+      - name: Trivy Image Scanning for Vulnarability
+        uses: aquasecurity/trivy-action@master
         with:
-          image-ref: '$IMAGE_NAME:$IMAGE_TAG'
-          format: 'template'
-          template: '@/contrib/sarif.tpl'
+          image-ref: nginx:stable-alpine #'$IMAGE_NAME:$IMAGE_TAG'
+          format: 'sarif'
           output: 'trivy-results.sarif'
+          exit-code: '1'
+          ignore-unfixed: true
+          vuln-type: 'os,library'
           severity: 'CRITICAL,HIGH'
       - uses: github/codeql-action/upload-sarif@v2
         if: always()
