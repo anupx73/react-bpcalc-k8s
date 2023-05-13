@@ -25,9 +25,9 @@ docker compose up -d
 ## Manually Image Build and Push
 
 ```
-docker build . --file Dockerfile --tag frontend:v1.0.91-manual;
-docker tag frontend:v1.0.91-manual gcr.io/tudublin/frontend:v1.0.91-manual;
-docker push gcr.io/tudublin/frontend:v1.0.91-manual
+docker build . --file Dockerfile --tag frontend:v1.0.99-manual;
+docker tag frontend:v1.0.99-manual gcr.io/tudublin/frontend:v1.0.99-manual;
+docker push gcr.io/tudublin/frontend:v1.0.99-manual
 ```
 
 ## Note on Package JSON

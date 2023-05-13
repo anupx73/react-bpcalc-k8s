@@ -10,7 +10,7 @@ on:
 env:
   GCP_PROJECT: tudublin
   GKE_ZONE: europe-west1-b
-  GKE_CLUSTER_DEV: gke-dev
+  GKE_CLUSTER_DEV: gke-stg
   GKE_CLUSTER_STG: gke-stg
   DEPLOYMENT_NAME: frontend-deployment
   IMAGE_NAME: frontend
