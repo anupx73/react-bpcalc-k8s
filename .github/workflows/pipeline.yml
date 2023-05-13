@@ -79,13 +79,13 @@ jobs:
       # Build Container Image
       - name: Image build
         run: |
-          docker build . --file Dockerfile --tag $IMAGE_NAME:$IMAGE_TAG
+          docker build . --file Dockerfile --tag $IMAGE_NAME:latest
 
       # Trivy Scan for Container Image Vulnarability
       - name: Trivy Vulnerability Scanner
         uses: aquasecurity/trivy-action@0.9.2
         with:
-          image-ref: '$IMAGE_NAME:$IMAGE_TAG'
+          image-ref: $IMAGE_NAME:latest
           format: 'sarif'
           output: 'trivy-results.sarif'
           exit-code: '1'
