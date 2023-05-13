@@ -30,59 +30,59 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         
-      # # Setup Node
-      # - name: Set up Node
-      #   uses: actions/setup-node@v3
-      #   with:
-      #     node-version: 19
-      #     cache: 'npm'
+      # Setup Node
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 19
+          cache: 'npm'
       
-      # # Install Node Dependencies
-      # - name: Dependency
-      #   run: npm ci
+      # Install Node Dependencies
+      - name: Dependency
+        run: npm ci
       
-      # # Unit Test Placeholder - Need to write unit testing
-      # # To bypass Sonar cloud quality gateway failure code coverage check is turned off for this project
+      # Unit Test Placeholder - Need to write unit testing
+      # To bypass Sonar cloud quality gateway failure code coverage check is turned off for this project
       # - name: Unit Test
       #   run: npm test
 
-      # # Sonar Static Code Analysis
-      # - name: SonarCloud Analysis
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: ~/.sonar/cache
-      #     key: ${{ runner.os }}-sonar
-      #     restore-keys: ${{ runner.os }}-sonar
-      # - uses: SonarSource/sonarcloud-github-action@v1.8
-      #   env:
-      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      #   with:
-      #     args:
-      #       -Dsonar.projectKey=react-bp-microservice
-      #       -Dsonar.organization=hypheni
-      #       -Dsonar.javascript.lcov.reportPaths=./coverage/lcov.info
+      # Sonar Static Code Analysis
+      - name: Static Code Analysis
+        uses: actions/cache@v2
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      - uses: SonarSource/sonarcloud-github-action@v1.8
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args:
+            -Dsonar.projectKey=react-bp-microservice
+            -Dsonar.organization=hypheni
+            -Dsonar.javascript.lcov.reportPaths=./coverage/lcov.info
 
-      # # Synk Scan for Node Packages Vulnarability
-      # - name: Vulnerability Check with Synk
-      #   uses: snyk/actions/node@master
-      #   continue-on-error: true
-      #   env:
-      #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      #   with:
-      #     args: --sarif-file-output=snyk.sarif
-      #           --severity-threshold=high
-      #           # --dev
-      # - uses: github/codeql-action/upload-sarif@v2
-      #   with:
-      #     sarif_file: snyk.sarif
+      # Synk Scan for Node Packages Vulnarability
+      - name: Scan Node Packages for Vulnerabilities
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --sarif-file-output=node-scan-snyk.sarif
+                --severity-threshold=high
+                # --dev
+      - uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: node-scan-snyk.sarif
 
       # Build Container Image
-      - name: Image build
+      - name: Build Container Image
         run: |
           docker build . --file Dockerfile --tag $IMAGE_NAME:$IMAGE_TAG
 
       # Container Vulnerability Scan
-      - name: Scan Container for Vulnerabilities
+      - name: Scan Container Image for Vulnerabilities
         continue-on-error: true
         uses: snyk/actions/docker@master
         env:
@@ -90,13 +90,12 @@ jobs:
         with:
           image: $IMAGE_NAME:$IMAGE_TAG
           args: --file=Dockerfile
-      
-      - name: Upload Scan Result to GitHub Code Scanning
-        uses: github/codeql-action/upload-sarif@v2
+      - uses: github/codeql-action/upload-sarif@v2
         with:
           sarif_file: snyk.sarif
 
       # # Trivy Scan for Container Image Vulnarability
+      # # This is broken as off 12-May: Reported to Trivy Community
       # - name: Trivy Image Scanning for Vulnarability
       #   uses: aquasecurity/trivy-action@master
       #   with:
