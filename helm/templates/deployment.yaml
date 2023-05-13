@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.container.name }}-deployment
+  name: '{{ .Values.container.name }}-deployment'
 spec:
   selector:
     matchLabels:
@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: {{ .Values.container.name }}
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        image: '{{ .Values.image.repository }}:{{ .Values.image.tag }}'
         env:
-        - name: "PORT"
-          value: "{{ .Values.container.port }}"
+        - name: 'PORT'
+          value: '{{ .Values.container.port }}'

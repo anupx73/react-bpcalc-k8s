@@ -173,32 +173,40 @@ jobs:
           kubectl rollout status deployment/$DEPLOYMENT_NAME
           kubectl get services -o wide
 
-  # -------------- Testing ---------------
+  # -------------- QA Testing ---------------
   continuous-testing:
     needs: deploy-dev
-    if: github.ref == 'refs/heads/qa'
+    if: ${{ success() }}
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-node@v3
+    # Git Checkout
+    - name: Checkout
+      uses: actions/checkout@v3
+
+    # Perf test
+    - name: Load Testing
+      run: |
+        docker pull loadimpact/k6
+        docker run -i loadimpact/k6 run - <tests/perf.test.js > k6report.txt
+        mkdir -p ${{github.workspace}}/reports
+        mv ${{github.workspace}}/k6report.txt ${{github.workspace}}/reports/load-test-report.txt
+    
+    # Pen testing
+    - name: Penetration Testing
+      run: |
+        app_url=$(jq '.frontend.url' src/config.json)
+        echo $app_url
+        docker pull owasp/zap2docker-weekly
+        docker run -v /tmp:/zap/wrk/:rw --user root -t owasp/zap2docker-weekly zap-baseline.py -t $app_url -I -r zapreport.html
+        sudo mv /tmp/zapreport.html ${{github.workspace}}/reports/pen-test-report.html
+
+    # Test Report Upload
+    - name: Uploading reports
+      uses: actions/upload-artifact@v3
       with:
-        node-version: 19
-
-    - name: Cache node modules
-      id: cache-nodemodules
-      uses: actions/cache@v2
-      env:
-        cache-name: cache-node-modules
-      with:
-        path: node_modules
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
-        restore-keys: |
-          ${{ runner.os }}-build-${{ env.cache-name }}-
-          ${{ runner.os }}-build-
-          ${{ runner.os }}-
-
-    - name: Install dependencies
-      run: npm ci; npx playwright install --with-deps
-
-    - name: Run Playwright tests
-      run: npx playwright test tests/e2e.spec.ts
+        name: qa-test-reports
+        path: ${{github.workspace}}/reports/*

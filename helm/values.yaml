@@ -8,3 +8,6 @@ image:
 container:
   name: frontend
   port: 8080
+
+service:
+  gcpIPName: frontend-ip

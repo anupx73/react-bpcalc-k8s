@@ -3,7 +3,7 @@ import config from '../config.json';
 
 function History() {
   const [data, setData] = useState([]);
-  let backendUrl = 'http://' + window.location.hostname + '/api/'
+  let backendUrl = 'http://' + config.backend.url + '/api/bpcalc/'
   const fetchData = () => {
     fetch(backendUrl)
       .then((response) => response.json())
