@@ -203,15 +203,17 @@ jobs:
     #     docker run -v $PWD/src:/data -i loadimpact/k6 run - <tests/perf.test.js > k6report.txt
     #     mv ${{github.workspace}}/k6report.txt ${{github.workspace}}/reports/load-test-report.txt
     
-    # Pen testing docker pull owasp/zap2docker-weekly
+    # Pen testing 
+    # docker pull owasp/zap2docker-weekly
+    # mkdir -p ${{github.workspace}}/reports
+    # sudo mv /tmp/zapreport.html ${{github.workspace}}/reports/pen-test-report.html
+
     - name: Penetration Testing
       run: |
         export BPCALC_URL=$(jq '.frontend.url' src/config.json)
         echo $BPCALC_URL
-        
-        echo "docker run -v /tmp:/zap/wrk/:rw --user root -t owasp/zap2docker-weekly zap-baseline.py -t $BPCALC_URL -I -r zapreport.html"
-        mkdir -p ${{github.workspace}}/reports
-        sudo mv /tmp/zapreport.html ${{github.workspace}}/reports/pen-test-report.html
+        docker pull owasp/zap2docker-weekly
+        docker run -v /tmp:/zap/wrk/:rw --user root -t owasp/zap2docker-weekly zap-baseline.py -t "$BPCALC_URL" -I -r zapreport.html
 
     # Test Report Upload
     - name: Uploading reports
