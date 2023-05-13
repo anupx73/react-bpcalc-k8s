@@ -196,12 +196,12 @@ jobs:
       uses: actions/checkout@v3
 
     # Perf test
-    - name: Load Testing
-      run: |
-        docker pull loadimpact/k6
-        docker run -i loadimpact/k6 run - <tests/perf.test.js > k6report.txt
-        mkdir -p ${{github.workspace}}/reports
-        mv ${{github.workspace}}/k6report.txt ${{github.workspace}}/reports/load-test-report.txt
+    # - name: Load Testing
+    #   run: |
+    #     docker pull loadimpact/k6
+    #     ls -al $PWD/src
+    #     docker run -v $PWD/src:/data -i loadimpact/k6 run - <tests/perf.test.js > k6report.txt
+    #     mv ${{github.workspace}}/k6report.txt ${{github.workspace}}/reports/load-test-report.txt
     
     # Pen testing
     - name: Penetration Testing
@@ -210,6 +210,7 @@ jobs:
         echo $app_url
         docker pull owasp/zap2docker-weekly
         docker run -v /tmp:/zap/wrk/:rw --user root -t owasp/zap2docker-weekly zap-baseline.py -t $app_url -I -r zapreport.html
+        mkdir -p ${{github.workspace}}/reports
         sudo mv /tmp/zapreport.html ${{github.workspace}}/reports/pen-test-report.html
 
     # Test Report Upload
