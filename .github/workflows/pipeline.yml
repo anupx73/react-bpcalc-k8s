@@ -260,16 +260,11 @@ jobs:
 
     # Create Release
     - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      uses: ncipollo/release-action@v1
       with:
-        tag_name: '$IMAGE_TAG'
-        release_name: 'Release $IMAGE_NAME $IMAGE_TAG'
+        tag: '$IMAGE_TAG'
+        name: 'Release $IMAGE_NAME $IMAGE_TAG'
         body: |
           Docker image available at: gcr.io/$GCP_PROJECT/$IMAGE_NAME:$IMAGE_TAG
           Release Notes: 
           ${{ steps.getCommitMsg.outputs.RELEASE_NOTE }}
-        draft: false
-        prerelease: false
