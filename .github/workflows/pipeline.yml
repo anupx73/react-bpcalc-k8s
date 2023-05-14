@@ -16,6 +16,7 @@ env:
   IMAGE_NAME: frontend
   IMAGE_TAG: v1.0.${{ github.run_number }}
   HELM_RELEASE: frontend
+  K8S_NAMESPACE: ns-frontend
 
 jobs:
   # -------------- CI Build ---------------
@@ -144,9 +145,9 @@ jobs:
       # Deploy to GKE Dev
       - name: Deploying to GKE Dev
         run: |
-          helm upgrade $HELM_RELEASE helm/ --install --set image.tag=$IMAGE_TAG --namespace ns-backend --create-namespace  --wait
-          kubectl --namespace ns-backend rollout status deployment/$DEPLOYMENT_NAME
-          kubectl --namespace ns-backend get services -o wide
+          helm upgrade $HELM_RELEASE helm/ --install --set image.tag=$IMAGE_TAG --namespace $K8S_NAMESPACE --create-namespace  --wait
+          kubectl --namespace $K8S_NAMESPACE rollout status deployment/$DEPLOYMENT_NAME
+          kubectl --namespace $K8S_NAMESPACE get services -o wide
 
   # -------------- CD to Stg ---------------
   deploy-stg:
@@ -178,9 +179,9 @@ jobs:
       # Deploy to GKE Stg
       - name: Deploying to GKE Stg
         run: |
-          helm upgrade $HELM_RELEASE helm/ --install --set image.tag=$IMAGE_TAG --namespace ns-backend --create-namespace  --wait
-          kubectl --namespace ns-backend rollout status deployment/$DEPLOYMENT_NAME
-          kubectl --namespace ns-backend get services -o wide
+          helm upgrade $HELM_RELEASE helm/ --install --set image.tag=$IMAGE_TAG --namespace $K8S_NAMESPACE --create-namespace  --wait
+          kubectl --namespace $K8S_NAMESPACE rollout status deployment/$DEPLOYMENT_NAME
+          kubectl --namespace $K8S_NAMESPACE get services -o wide
 
   # -------------- QA Testing ---------------
   continuous-testing:
