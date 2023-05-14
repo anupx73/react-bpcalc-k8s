@@ -243,9 +243,7 @@ jobs:
     # needs: deploy-dev
     # if: ${{ success() }}
     runs-on: ubuntu-22.04
-    permissions:
-      contents: read
-      packages: write
+    permissions: write-all
 
     steps:
     # Git Checkout
