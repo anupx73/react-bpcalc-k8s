@@ -260,9 +260,10 @@ jobs:
     - name: Create Release
       uses: ncipollo/release-action@v1
       with:
-        tag: '$IMAGE_TAG'
-        name: 'Release $IMAGE_NAME $IMAGE_TAG'
+        tag: ${{ env.IMAGE_TAG }}
+        name: 'Release ${{ env.IMAGE_NAME }} $ {{ env.IMAGE_TAG }}'
         body: |
-          Docker image available at: gcr.io/$GCP_PROJECT/$IMAGE_NAME:$IMAGE_TAG
-          Release Notes: 
+          **Docker Image**  
+          gcr.io/$GCP_PROJECT/$IMAGE_NAME:$IMAGE_TAG  
+          **Release Notes**  
           ${{ steps.getCommitMsg.outputs.RELEASE_NOTE }}
