@@ -99,7 +99,7 @@ jobs:
       - name: Trivy Image Scanning for Vulnarability
         uses: aquasecurity/trivy-action@master
         with:
-          image-ref: nginx:stable-alpine #'$IMAGE_NAME:$IMAGE_TAG'
+          image-ref: ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG}}
           format: 'sarif'
           output: 'trivy-results.sarif'
           exit-code: '1'
@@ -261,9 +261,10 @@ jobs:
       uses: ncipollo/release-action@v1
       with:
         tag: ${{ env.IMAGE_TAG }}
-        name: 'Release ${{ env.IMAGE_NAME }} ${{ env.IMAGE_TAG }}'
+        name: '${{ env.IMAGE_NAME }}-${{ env.IMAGE_TAG }}'
         body: |
           **Docker Image**  
-          gcr.io/$GCP_PROJECT/$IMAGE_NAME:$IMAGE_TAG  
-          **Release Notes**  
+          gcr.io/${{ env.GCP_PROJECT }}/${{ env.IMAGE_NAME }}:${{env.IMAGE_TAG }} 
+          
+          **Detailed Changes**  
           ${{ steps.getCommitMsg.outputs.RELEASE_NOTE }}
