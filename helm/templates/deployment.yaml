@@ -6,7 +6,7 @@ spec:
   selector:
     matchLabels:
       repo: bpcalc
-  replicas: 1
+  replicas: 3
   template:
     metadata:
       labels:
@@ -15,8 +15,20 @@ spec:
       containers:
       - name: {{ .Values.container.name }}
         image: '{{ .Values.image.repository }}:{{ .Values.image.tag }}'
-        securityContext:
-          allowPrivilegeEscalation: false
         env:
         - name: 'PORT'
           value: '{{ .Values.container.port }}'
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          capabilities:
+            drop:
+              - all
+            add: ["MKNOD"]
+        livenessProbe:
+          exec:
+            command:
+            - cat
+            - /usr/share/nginx/html/index.html
+          initialDelaySeconds: 5
+          periodSeconds: 5
