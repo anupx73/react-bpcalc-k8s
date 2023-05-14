@@ -226,8 +226,8 @@ jobs:
 
   # -------------- Release ---------------
   release:
-    needs: build
-    # if: ${{ success() }}
+    needs: continuous-testing
+    if: ${{ success() }}
     runs-on: ubuntu-22.04
     permissions: write-all
 
