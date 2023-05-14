@@ -30,72 +30,58 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
         
-      # # Setup Node
-      # - name: Set up Node
-      #   uses: actions/setup-node@v3
-      #   with:
-      #     node-version: 19
-      #     cache: 'npm'
+      # Setup Node
+      - name: Set up Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 19
+          cache: 'npm'
       
-      # # Install Node Dependencies
-      # - name: Dependency
-      #   run: npm ci
+      # Install Node Dependencies
+      - name: Dependency
+        run: npm ci
       
       # Unit Test Placeholder - Need to write unit testing
       # To bypass Sonar cloud quality gateway failure code coverage check is turned off for this project
       # - name: Unit Test
       #   run: npm test
 
-      # # Sonar Static Code Analysis
-      # - name: Static Code Analysis
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: ~/.sonar/cache
-      #     key: ${{ runner.os }}-sonar
-      #     restore-keys: ${{ runner.os }}-sonar
-      # - uses: SonarSource/sonarcloud-github-action@v1.8
-      #   env:
-      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      #   with:
-      #     args:
-      #       -Dsonar.projectKey=react-bp-microservice
-      #       -Dsonar.organization=hypheni
-      #       -Dsonar.javascript.lcov.reportPaths=./coverage/lcov.info
+      # Sonar Static Code Analysis
+      - name: Static Code Analysis
+        uses: actions/cache@v2
+        with:
+          path: ~/.sonar/cache
+          key: ${{ runner.os }}-sonar
+          restore-keys: ${{ runner.os }}-sonar
+      - uses: SonarSource/sonarcloud-github-action@v1.8
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args:
+            -Dsonar.projectKey=react-bp-microservice
+            -Dsonar.organization=hypheni
+            -Dsonar.javascript.lcov.reportPaths=./coverage/lcov.info
 
-      # # Synk Scan for Node Packages Vulnarability
-      # - name: Scan Node Packages for Vulnerabilities
-      #   uses: snyk/actions/node@master
-      #   continue-on-error: true
-      #   env:
-      #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      #   with:
-      #     args: --sarif-file-output=node-scan-snyk.sarif
-      #           --severity-threshold=high
-      #           # --dev
-      # - uses: github/codeql-action/upload-sarif@v2
-      #   with:
-      #     sarif_file: node-scan-snyk.sarif
+      # Synk Scan for Node Packages Vulnarability
+      - name: Scan Node Packages for Vulnerabilities
+        uses: snyk/actions/node@master
+        continue-on-error: true
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --sarif-file-output=node-scan-snyk.sarif
+                --severity-threshold=high
+                # --dev
+      - uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: node-scan-snyk.sarif
 
       # Build Container Image
       - name: Build Container Image
         run: |
           docker build . --file Dockerfile --tag $IMAGE_NAME:$IMAGE_TAG
 
-      # # Container Vulnerability Scan
-      # - name: Scan Container Image for Vulnerabilities
-      #   continue-on-error: true
-      #   uses: snyk/actions/docker@master
-      #   env:
-      #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      #   with:
-      #     image: $IMAGE_NAME:$IMAGE_TAG
-      #     args: --file=Dockerfile
-      # - uses: github/codeql-action/upload-sarif@v2
-      #   with:
-      #     sarif_file: snyk.sarif
-
       # Trivy Scan for Container Image Vulnarability
-      # This is broken as off 12-May: Reported to Trivy Community
       - name: Trivy Image Scanning for Vulnarability
         uses: aquasecurity/trivy-action@master
         with:
@@ -111,132 +97,132 @@ jobs:
         with:
           sarif_file: 'trivy-results.sarif'
   
-  #     # GCP Set up
-  #     - name: GCP Auth
-  #       uses: google-github-actions/auth@v1
-  #       with:
-  #         credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
-  #     - name: GCP Config
-  #       uses: google-github-actions/setup-gcloud@v1
-  #       with:
-  #         version: latest
+      # GCP Set up
+      - name: GCP Auth
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
+      - name: GCP Config
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          version: latest
 
-  #     # Push to GCR
-  #     - name: Push to GCR
-  #       run: |-
-  #         gcloud auth configure-docker
-  #         docker tag $IMAGE_NAME:$IMAGE_TAG gcr.io/$GCP_PROJECT/$IMAGE_NAME:$IMAGE_TAG
-  #         docker push gcr.io/$GCP_PROJECT/$IMAGE_NAME:$IMAGE_TAG
+      # Push to GCR
+      - name: Push to GCR
+        run: |-
+          gcloud auth configure-docker
+          docker tag $IMAGE_NAME:$IMAGE_TAG gcr.io/$GCP_PROJECT/$IMAGE_NAME:$IMAGE_TAG
+          docker push gcr.io/$GCP_PROJECT/$IMAGE_NAME:$IMAGE_TAG
 
-  # # -------------- CD to Dev ---------------
-  # deploy-dev:
-  #   if: github.ref != 'refs/heads/main'
-  #   needs: build
-  #   runs-on: ubuntu-22.04
-  #   steps:
-  #     # Git Checkout
-  #     - name: Checkout
-  #       uses: actions/checkout@v3
+  # -------------- CD to Dev ---------------
+  deploy-dev:
+    if: github.ref != 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-22.04
+    steps:
+      # Git Checkout
+      - name: Checkout
+        uses: actions/checkout@v3
       
-  #     # GCP Set up
-  #     - name: GCP Auth
-  #       uses: google-github-actions/auth@v1
-  #       with:
-  #         credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
-  #     - name: GCP Config
-  #       uses: google-github-actions/setup-gcloud@v1
-  #       with:
-  #         version: latest
+      # GCP Set up
+      - name: GCP Auth
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
+      - name: GCP Config
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          version: latest
       
-  #     # Config dev env on feat branch push
-  #     - name: Connecting to Dev Env
-  #       run: |-
-  #         gcloud components install gke-gcloud-auth-plugin
-  #         gcloud auth configure-docker
-  #         gcloud container clusters get-credentials $GKE_CLUSTER_DEV --zone $GKE_ZONE --project $GCP_PROJECT
+      # Config dev env on feat branch push
+      - name: Connecting to Dev Env
+        run: |-
+          gcloud components install gke-gcloud-auth-plugin
+          gcloud auth configure-docker
+          gcloud container clusters get-credentials $GKE_CLUSTER_DEV --zone $GKE_ZONE --project $GCP_PROJECT
 
-  #     # Deploy to GKE Dev
-  #     - name: Deploying to GKE Dev
-  #       run: |
-  #         helm upgrade $HELM_RELEASE helm/ --install --set image.tag=$IMAGE_TAG --wait
-  #         kubectl rollout status deployment/$DEPLOYMENT_NAME
-  #         kubectl get services -o wide
+      # Deploy to GKE Dev
+      - name: Deploying to GKE Dev
+        run: |
+          helm upgrade $HELM_RELEASE helm/ --install --set image.tag=$IMAGE_TAG --namespace ns-backend --create-namespace  --wait
+          kubectl --namespace ns-backend rollout status deployment/$DEPLOYMENT_NAME
+          kubectl --namespace ns-backend get services -o wide
 
-  # # -------------- CD to Stg ---------------
-  # deploy-stg:
-  #   if: github.ref == 'refs/heads/main'
-  #   needs: build
-  #   runs-on: ubuntu-22.04
-  #   steps:
-  #     # Git Checkout
-  #     - name: Checkout
-  #       uses: actions/checkout@v3
+  # -------------- CD to Stg ---------------
+  deploy-stg:
+    if: github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-22.04
+    steps:
+      # Git Checkout
+      - name: Checkout
+        uses: actions/checkout@v3
 
-  #     # GCP Set up
-  #     - name: GCP Auth
-  #       uses: google-github-actions/auth@v1
-  #       with:
-  #         credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
-  #     - name: GCP Config
-  #       uses: google-github-actions/setup-gcloud@v1
-  #       with:
-  #         version: latest
+      # GCP Set up
+      - name: GCP Auth
+        uses: google-github-actions/auth@v1
+        with:
+          credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
+      - name: GCP Config
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          version: latest
       
-  #     # Config staging env on main branch push
-  #     - name: Connecting to Staging Env
-  #       run: |-
-  #         gcloud components install gke-gcloud-auth-plugin
-  #         gcloud auth configure-docker
-  #         gcloud container clusters get-credentials $GKE_CLUSTER_STG --zone $GKE_ZONE --project $GCP_PROJECT
+      # Config staging env on main branch push
+      - name: Connecting to Staging Env
+        run: |-
+          gcloud components install gke-gcloud-auth-plugin
+          gcloud auth configure-docker
+          gcloud container clusters get-credentials $GKE_CLUSTER_STG --zone $GKE_ZONE --project $GCP_PROJECT
 
-  #     # Deploy to GKE Stg
-  #     - name: Deploying to GKE Stg
-  #       run: |
-  #         helm upgrade $HELM_RELEASE helm/ --install --set image.tag=$IMAGE_TAG --wait
-  #         kubectl rollout status deployment/$DEPLOYMENT_NAME
-  #         kubectl get services -o wide
+      # Deploy to GKE Stg
+      - name: Deploying to GKE Stg
+        run: |
+          helm upgrade $HELM_RELEASE helm/ --install --set image.tag=$IMAGE_TAG --namespace ns-backend --create-namespace  --wait
+          kubectl --namespace ns-backend rollout status deployment/$DEPLOYMENT_NAME
+          kubectl --namespace ns-backend get services -o wide
 
-  # # -------------- QA Testing ---------------
-  # continuous-testing:
-  #   needs: deploy-dev
-  #   if: ${{ success() }}
-  #   runs-on: ubuntu-22.04
-  #   permissions:
-  #     contents: read
-  #     packages: write
-  #     security-events: write
-  #   steps:
-  #   # Git Checkout
-  #   - name: Checkout
-  #     uses: actions/checkout@v3
+  # -------------- QA Testing ---------------
+  continuous-testing:
+    needs: deploy-dev
+    if: ${{ success() }}
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+    steps:
+    # Git Checkout
+    - name: Checkout
+      uses: actions/checkout@v3
 
-  #   # Perf test placeholder - Need to write K6 load testing script
-  #   # - name: Load Testing
-  #   #   run: |
-  #   #     docker pull loadimpact/k6
-  #   #     ls -al $PWD/src
-  #   #     docker run -v $PWD/src:/data -i loadimpact/k6 run - <tests/perf.test.js > k6report.txt
-  #   #     mv ${{github.workspace}}/k6report.txt ${{github.workspace}}/reports/load-test-report.txt
+    # Perf test placeholder - Need to write K6 load testing script
+    # - name: Load Testing
+    #   run: |
+    #     docker pull loadimpact/k6
+    #     ls -al $PWD/src
+    #     docker run -v $PWD/src:/data -i loadimpact/k6 run - <tests/perf.test.js > k6report.txt
+    #     mv ${{github.workspace}}/k6report.txt ${{github.workspace}}/reports/load-test-report.txt
 
-  #   - name: Retrieve App URL
-  #     id: geturl
-  #     run: |
-  #       echo "BPCALC_URL=$(jq '.frontend.url' src/config.json)" >> $GITHUB_OUTPUT
+    - name: Retrieve App URL
+      id: geturl
+      run: |
+        echo "BPCALC_URL=$(jq '.frontend.url' src/config.json)" >> $GITHUB_OUTPUT
 
-  #   - name: Penetration Testing
-  #     run: |
-  #       echo 'Hitting url: ${{ steps.geturl.outputs.BPCALC_URL }}'
-  #       mkdir -p ${{github.workspace}}/reports
-  #       docker pull owasp/zap2docker-weekly
-  #       docker run -v /tmp:/zap/wrk/:rw --user root -t owasp/zap2docker-weekly zap-baseline.py -t ${{ steps.geturl.outputs.BPCALC_URL }} -I -r zapreport.html
-  #       sudo mv /tmp/zapreport.html ${{github.workspace}}/reports/pen-test-report.html
+    - name: Penetration Testing
+      run: |
+        echo 'Hitting url: ${{ steps.geturl.outputs.BPCALC_URL }}'
+        mkdir -p ${{github.workspace}}/reports
+        docker pull owasp/zap2docker-weekly
+        docker run -v /tmp:/zap/wrk/:rw --user root -t owasp/zap2docker-weekly zap-baseline.py -t ${{ steps.geturl.outputs.BPCALC_URL }} -I -r zapreport.html
+        sudo mv /tmp/zapreport.html ${{github.workspace}}/reports/pen-test-report.html
 
-  #   # Test Report Upload
-  #   - name: Uploading reports
-  #     uses: actions/upload-artifact@v3
-  #     with:
-  #       name: qa-test-reports
-  #       path: ${{github.workspace}}/reports/*
+    # Test Report Upload
+    - name: Uploading reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: qa-test-reports
+        path: ${{github.workspace}}/reports/*
 
   # -------------- Release ---------------
   release:
@@ -265,6 +251,6 @@ jobs:
         body: |
           **Docker Image**  
           gcr.io/${{ env.GCP_PROJECT }}/${{ env.IMAGE_NAME }}:${{env.IMAGE_TAG }} 
-          
-          **Detailed Changes**  
+
+          **Changes**  
           ${{ steps.getCommitMsg.outputs.RELEASE_NOTE }}
