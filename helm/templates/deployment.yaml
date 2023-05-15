@@ -1,20 +1,34 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.container.name }}-deployment
+  name: {{ .Values.deploy.name }}
 spec:
   selector:
     matchLabels:
-      repo: bpcalc
-  replicas: 1
+      dep: {{ .Values.deploy.label.dep }}
+  replicas: 3
   template:
     metadata:
       labels:
-        repo: bpcalc
+        dep: {{ .Values.deploy.label.dep }}
     spec:
       containers:
       - name: {{ .Values.container.name }}
-        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        image: '{{ .Values.image.repository }}:{{ .Values.image.tag }}'
         env:
-        - name: "PORT"
-          value: "{{ .Values.container.port }}"
+        - name: 'PORT'
+          value: '{{ .Values.container.port }}'
+        securityContext:
+          allowPrivilegeEscalation: false
+          runAsNonRoot: true
+          capabilities:
+            drop:
+              - all
+            add: ["MKNOD"]
+        livenessProbe:
+          exec:
+            command:
+            - cat
+            - /usr/share/nginx/html/index.html
+          initialDelaySeconds: 5
+          periodSeconds: 5

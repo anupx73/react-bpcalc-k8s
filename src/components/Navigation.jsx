@@ -8,7 +8,7 @@ function Navigation() {
         <div class="container">
           <NavLink className="navbar-brand" to="/">
             <h4 class="text-primary">
-              <span class="fa-solid fa-droplet" />&nbsp;&nbsp;BP Category Calculator
+              <span class="fa-solid fa-droplet" />&nbsp;&nbsp;[Dev] BP Category Calculator [Dev]
             </h4>
           </NavLink>
           <div>

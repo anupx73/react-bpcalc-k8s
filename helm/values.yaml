@@ -2,9 +2,20 @@ replicaCount: 1
 
 image:
   repository: gcr.io/tudublin/frontend
-  tag: v1.0.92-manual
+  tag: v1.0.99-manual
   pullPolicy: Always
 
 container:
   name: frontend
   port: 8080
+
+service:
+  name: frontend-service
+  ingressName: fe-ingress
+  staticIP: frontend-ip
+  port: 80
+
+deploy:
+  name: frontend-deployment
+  label:
+    dep: stable
