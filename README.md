@@ -14,20 +14,35 @@ npm i
 npm start
 npm test
 
-# Production
+# Production Build
 npm ci
 npm run build
 
 # Local Server
 docker compose up -d
 
-# Build
+# Container Build, Push
 docker build . --file Dockerfile --tag frontend:v1.0.96-security;
 docker tag frontend:v1.0.96-security gcr.io/tudublin/frontend:v1.0.96-security;
 docker push gcr.io/tudublin/frontend:v1.0.96-security
 
-# Deployment
+# Refresh gcp connection
+gcloud container clusters get-credentials gke-stg --project tudublin --zone europe-west1-b
+
+# Rolling Deployment
 helm upgrade frontend helm/ --install --namespace ns-frontend --create-namespace --wait
+
+# Blue/Green Deployment
+# - Currently ingress is using gcp static ip, hence to reassign the same ip as part 
+#   of blue/green deployment existing ingress has to be deleted before a helm install
+kubectl delete ingress fe-ingress --namespace ns-frontend
+helm install frontend-green helm/ \
+      --set image.tag=v1.0.38 \
+      --set deploy.name=frontend-deployment-green \
+      --set deploy.label.dep=green \
+      --set service.name=frontend-service-green \
+      --namespace ns-frontend-green --create-namespace \
+      --wait
 ```
 
 ## Miscellaneous 
@@ -48,3 +63,9 @@ While Kubernetes security context is set to `runAsNonRoot: true` standard nginx 
     "version": "4.9.5",
     "resolved": "https://registry.npmjs.org/typescript/-/typescript-4.9.5.tgz",
     "integrity": "sha512-1FXk9E2Hm+QzZQ7z+McJiHL4NW1F2EzMu9Nq9i3zAaGqibafqYwCVU6WyWAuyQRRzOlxou8xZSyXLEN8oKj24g==",`
+
+**2. K8S Security And Nginx Image**  
+While Kubernetes security context is set to `runAsNonRoot: true` standard nginx image `nginx:stable-alpine` used for containers will not work. As a workaround `nginxinc/nginx-unprivileged:stable-alpine` had to be used as the former one uses privileged user for operations. Ref: [stackoverflow](https://stackoverflow.com/questions/64386645/error-user-directive-makes-sense-only-if-the-master-process-runs-with-super-u), [github](https://github.com/nginxinc/docker-nginx-unprivileged)
+
+**3. Manually Delete Ingress For a Blue/Green Deployment**  
+Currently due to the use of static ip for ingress, it has to be manually deleted for a blue/green deployment otherwise a static ip conflict error will be thrown.

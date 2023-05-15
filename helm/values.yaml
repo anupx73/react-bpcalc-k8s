@@ -14,3 +14,8 @@ service:
   ingressName: fe-ingress
   staticIP: frontend-ip
   port: 80
+
+deploy:
+  name: frontend-deployment
+  label:
+    dep: stable
