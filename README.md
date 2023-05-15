@@ -47,7 +47,7 @@ helm install frontend-green helm/ \
 
 ## Miscellaneous 
 
-**Note on nginx Docker Image**  
+**Note on Nginx Docker Image**  
 While Kubernetes security context is set to `runAsNonRoot: true` standard nginx image `nginx:stable-alpine` used for containers will not work. As a workaround `nginxinc/nginx-unprivileged:stable-alpine` had to be used as the former one uses privileged user for operations.
 
 **Note on Package JSON**  
@@ -66,6 +66,3 @@ While Kubernetes security context is set to `runAsNonRoot: true` standard nginx 
 
 **2. K8S Security And Nginx Image**  
 While Kubernetes security context is set to `runAsNonRoot: true` standard nginx image `nginx:stable-alpine` used for containers will not work. As a workaround `nginxinc/nginx-unprivileged:stable-alpine` had to be used as the former one uses privileged user for operations. Ref: [stackoverflow](https://stackoverflow.com/questions/64386645/error-user-directive-makes-sense-only-if-the-master-process-runs-with-super-u), [github](https://github.com/nginxinc/docker-nginx-unprivileged)
-
-**3. Manually Delete Ingress For a Blue/Green Deployment**  
-Currently due to the use of static ip for ingress, it has to be manually deleted for a blue/green deployment otherwise a static ip conflict error will be thrown.
