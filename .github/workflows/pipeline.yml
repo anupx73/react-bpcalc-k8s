@@ -163,7 +163,7 @@ jobs:
           kubectl rollout status deployment/$K8S_DEPLOYMENT_NAME-green --namespace $K8S_NAMESPACE-green
           kubectl get services -o wide --namespace $K8S_NAMESPACE-green
           sleep 300
-
+          
       ## QA Testing 
       - name: Retrieve App URL
         id: geturl
